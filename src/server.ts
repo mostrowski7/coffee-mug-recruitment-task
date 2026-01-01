@@ -1,12 +1,11 @@
 import { createApp } from "./app.js";
-
-const PORT = process.env.PORT || 3000;
+import { config } from "@config/env.config.js";
 
 function bootstrap() {
   const app = createApp();
 
-  app.listen(PORT, () => {
-    console.log(`Server listening on PORT: ${PORT}`);
+  app.listen(config.port, () => {
+    console.log(`Server listening on PORT: ${config.port}`);
   });
 }
 

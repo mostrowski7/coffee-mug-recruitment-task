@@ -41,10 +41,14 @@
     "moduleDetection": "force",
     "skipLibCheck": true,
 
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     "paths": {
       "@config": ["shared/config/index.ts"],
       "@logger": ["shared/logger/index.ts"],
-      "@error": ["shared/error/index.ts"]
+      "@error": ["shared/error/index.ts"],
+      "@di": ["shared/di/index.ts"]
     }
   }
 }

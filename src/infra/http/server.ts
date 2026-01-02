@@ -1,6 +1,9 @@
+import "reflect-metadata";
+
 import { env } from "@config";
 import { logger } from "@logger";
 
+import { registerDependencies } from "../di/register.js";
 import { createApp } from "./app.js";
 
 process.on("unhandledRejection", (reason) => {
@@ -13,6 +16,8 @@ process.on("uncaughtException", (err) => {
 });
 
 async function bootstrap() {
+  registerDependencies();
+
   const app = createApp();
 
   app.listen(env.port, () => {

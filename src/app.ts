@@ -1,8 +1,9 @@
-import { env } from "@config";
 import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+
+import { env } from "@config";
 
 export function createApp() {
   const app = express();

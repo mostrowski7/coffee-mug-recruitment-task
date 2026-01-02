@@ -1,4 +1,5 @@
 import { env } from "@config";
+
 import { createApp } from "./app.js";
 
 function bootstrap() {

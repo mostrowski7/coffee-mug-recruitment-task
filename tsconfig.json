@@ -42,7 +42,7 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@config/*": ["shared/config/*"]
+      "@config": ["shared/config/index.ts"]
     }
   }
 }

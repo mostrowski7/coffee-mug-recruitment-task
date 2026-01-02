@@ -2,8 +2,12 @@ import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { pinoHttp } from "pino-http";
 
 import { env } from "@config";
+import { logger } from "@logger";
+
+import { errorHandler } from "./middleware/error-handler.middleware.js";
 
 export function createApp() {
   const app = express();
@@ -27,6 +31,10 @@ export function createApp() {
       legacyHeaders: false,
     }),
   );
+
+  app.use(pinoHttp({ logger }));
+
+  app.use(errorHandler);
 
   return app;
 }

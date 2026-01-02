@@ -42,7 +42,9 @@
     "skipLibCheck": true,
 
     "paths": {
-      "@config": ["shared/config/index.ts"]
+      "@config": ["shared/config/index.ts"],
+      "@logger": ["shared/logger/index.ts"],
+      "@error": ["shared/error/index.ts"]
     }
   }
 }

@@ -1,9 +1,10 @@
 import "reflect-metadata";
 
+import { initializeDatabase } from "@infra/db";
 import { env } from "@shared/config";
 import { logger } from "@shared/logger";
 
-import { registerDependencies } from "../di/register.js";
+import { registerDIContainers } from "../di/register.js";
 import { createApp } from "./app.js";
 
 process.on("unhandledRejection", (reason) => {
@@ -16,7 +17,9 @@ process.on("uncaughtException", (err) => {
 });
 
 async function bootstrap() {
-  registerDependencies();
+  registerDIContainers();
+
+  await initializeDatabase();
 
   const app = createApp();
 

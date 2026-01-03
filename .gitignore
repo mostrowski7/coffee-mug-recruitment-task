@@ -1,10 +1,16 @@
 # Node
 node_modules
 
-# Typescript
-dist
-
 # Environment files
 .env
 .env.*
 !.env.example
+
+# Typescript
+dist
+
+# Database
+db.json
+
+
+

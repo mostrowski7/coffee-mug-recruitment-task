@@ -1,7 +1,7 @@
 import "reflect-metadata";
 
-import { env } from "@config";
-import { logger } from "@logger";
+import { env } from "@shared/config";
+import { logger } from "@shared/logger";
 
 import { registerDependencies } from "../di/register.js";
 import { createApp } from "./app.js";

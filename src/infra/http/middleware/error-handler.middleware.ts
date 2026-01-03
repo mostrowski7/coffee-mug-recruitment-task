@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 
 import { ZodError } from "zod";
 
-import { HttpError } from "@error";
+import { HttpError } from "@shared/error";
 
 export function errorHandler(
   err: unknown,

@@ -4,8 +4,8 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 
-import { env } from "@config";
-import { logger } from "@logger";
+import { env } from "@shared/config";
+import { logger } from "@shared/logger";
 
 import { errorHandler } from "./middleware/error-handler.middleware.js";
 

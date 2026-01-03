@@ -1,6 +1,6 @@
 import pino from "pino";
 
-import { env } from "@config";
+import { env } from "@shared/config";
 
 export const logger = pino({
   level: env.nodeEnv === "production" ? "info" : "debug",

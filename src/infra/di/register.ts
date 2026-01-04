@@ -5,6 +5,8 @@ import {
   CreateProductCommand,
   GetAllProductsQuery,
   ProductRepository,
+  RestockProductCommand,
+  SellProductCommand,
 } from "@modules/product";
 import { logger } from "@shared/logger";
 
@@ -13,6 +15,10 @@ export function registerDIContainers() {
   container.registerSingleton(ProductRepository);
 
   container.register(CreateProductCommand, { useClass: CreateProductCommand });
+  container.register(RestockProductCommand, {
+    useClass: RestockProductCommand,
+  });
+  container.register(SellProductCommand, { useClass: SellProductCommand });
 
   container.register(GetAllProductsQuery, { useClass: GetAllProductsQuery });
 

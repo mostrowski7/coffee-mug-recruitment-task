@@ -16,7 +16,7 @@ export class Product {
   public static create(input: CreateProductInput): Product {
     const { name, description, price, stock } = input;
 
-    if (price < 0) throw new ValidationError("Price cannot be negative");
+    if (price <= 0) throw new ValidationError("Price must be positive");
 
     if (stock < 0) throw new ValidationError("Stock cannot be negative");
 
@@ -29,5 +29,17 @@ export class Product {
     }
 
     this.stock += amount;
+  }
+
+  public sell(amount: number): void {
+    if (amount <= 0) {
+      throw new ValidationError("Sell amount must be positive");
+    }
+
+    if (amount > this.stock) {
+      throw new ValidationError("Insufficient stock");
+    }
+
+    this.stock -= amount;
   }
 }

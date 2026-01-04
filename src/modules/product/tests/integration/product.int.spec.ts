@@ -48,6 +48,15 @@ describe("Product API endpoints", () => {
       expect(res.body.message).toBe("Invalid request data");
     });
 
+    it("should return validation error if price is zero", async () => {
+      const input = ProductFactory.buildCreateProductInput({ price: 0 });
+
+      const res = await request(app).post("/api/products").send(input);
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe("Invalid request data");
+    });
+
     it("should return validation error if stock is negative", async () => {
       const input = ProductFactory.buildCreateProductInput({ stock: -5 });
 
@@ -119,6 +128,71 @@ describe("Product API endpoints", () => {
 
       expect(updatedProduct).toBeDefined();
       expect(updatedProduct.stock).toBe(initialStock + restockAmount);
+    });
+  });
+
+  describe("POST /products/:id/sell", () => {
+    it("should sell product", async () => {
+      const initialStock = 5;
+      const sellAmount = 2;
+      const input = ProductFactory.buildCreateProductInput({
+        name: "Sell target",
+        stock: initialStock,
+      });
+
+      await request(app).post("/api/products").send(input).expect(201);
+
+      const createdProductRes = await request(app)
+        .get("/api/products")
+        .expect(200);
+
+      const createdProduct = createdProductRes.body.find(
+        (product: ProductResponseDto) => product.name === input.name,
+      );
+
+      expect(createdProduct).toBeDefined();
+      expect(createdProduct.stock).toBe(initialStock);
+
+      await request(app)
+        .post(`/api/products/${createdProduct.id}/sell`)
+        .send({ amount: sellAmount })
+        .expect(204);
+
+      const updatedRes = await request(app).get("/api/products").expect(200);
+
+      const updatedProduct = updatedRes.body.find(
+        (product: ProductResponseDto) => product.id === createdProduct.id,
+      );
+
+      expect(updatedProduct).toBeDefined();
+      expect(updatedProduct.stock).toBe(initialStock - sellAmount);
+    });
+
+    it("should return validation error when selling more than stock", async () => {
+      const initialStock = 1;
+      const sellAmount = 2;
+      const input = ProductFactory.buildCreateProductInput({
+        name: "Sell too much",
+        stock: initialStock,
+      });
+
+      await request(app).post("/api/products").send(input).expect(201);
+
+      const createdProductRes = await request(app)
+        .get("/api/products")
+        .expect(200);
+
+      const createdProduct = createdProductRes.body.find(
+        (product: ProductResponseDto) => product.name === input.name,
+      );
+
+      await request(app)
+        .post(`/api/products/${createdProduct.id}/sell`)
+        .send({ amount: sellAmount })
+        .expect(400)
+        .expect((res) => {
+          expect(res.body.message).toBe("Insufficient stock");
+        });
     });
   });
 });

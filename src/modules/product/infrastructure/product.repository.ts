@@ -25,7 +25,7 @@ export class ProductRepository {
 
       if (index === -1) throw new NotFoundError("Product not found");
 
-      products[index] = product;
+      products[index] = record;
     });
   }
 

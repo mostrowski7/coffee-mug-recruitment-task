@@ -41,13 +41,25 @@ describe("CreateProductCommand", () => {
     expect(repository.save).not.toHaveBeenCalled();
   });
 
-  it("should throw ValidationError if price is negative", async () => {
+  it("should throw ValidationError if price is non-positive", async () => {
     const inputWithNegativePrice = ProductFactory.buildCreateProductInput({
       price: -100,
     });
 
     await expect(command.execute(inputWithNegativePrice)).rejects.toThrow(
-      new ValidationError("Price cannot be negative"),
+      new ValidationError("Price must be positive"),
+    );
+
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it("should throw ValidationError if price is zero", async () => {
+    const inputWithZeroPrice = ProductFactory.buildCreateProductInput({
+      price: 0,
+    });
+
+    await expect(command.execute(inputWithZeroPrice)).rejects.toThrow(
+      new ValidationError("Price must be positive"),
     );
 
     expect(repository.save).not.toHaveBeenCalled();

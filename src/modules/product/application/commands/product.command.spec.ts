@@ -23,7 +23,7 @@ describe("CreateProductCommand", () => {
 
     command = testContainer.resolve(CreateProductCommand);
 
-    repository.findOneByName.mockReturnValue(null);
+    repository.findOneByName.mockResolvedValue(null);
   });
 
   it("should throw ConflictError if product already exists", async () => {
@@ -32,7 +32,7 @@ describe("CreateProductCommand", () => {
       name: input.name,
     });
 
-    repository.findOneByName.mockReturnValueOnce(existingProduct);
+    repository.findOneByName.mockResolvedValueOnce(existingProduct);
 
     await expect(command.execute(input)).rejects.toThrow(
       new ConflictError("Product already exists"),

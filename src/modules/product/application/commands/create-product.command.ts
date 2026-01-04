@@ -19,7 +19,7 @@ export class CreateProductCommand implements BaseCommand<
   ) {}
 
   async execute(input: CreateProductInput) {
-    const existing = this.productRepository.findOneByName(input.name);
+    const existing = await this.productRepository.findOneByName(input.name);
 
     if (existing) throw new ConflictError("Product already exists");
 

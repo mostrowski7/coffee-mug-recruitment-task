@@ -16,14 +16,13 @@ export class ProductRepository {
     await this.client.update(({ products }) => products.push(record));
   }
 
-  public findOneByName(name: string): Product | null {
+  public async findOneByName(name: string): Promise<Product | null> {
     const normalizedName = name.trim().toLowerCase();
 
-    const product = this.client
-      .data()
-      .products.find(
-        (product) => product.name.trim().toLowerCase() === normalizedName,
-      );
+    const { products } = await this.client.data();
+    const product = products.find(
+      (product) => product.name.trim().toLowerCase() === normalizedName,
+    );
 
     if (!product) return null;
 

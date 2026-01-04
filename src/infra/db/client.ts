@@ -19,11 +19,16 @@ export class LowDbClient {
 
   async init(): Promise<void> {
     await this.db.read();
-    this.db.data ||= DEFAULT_DATA;
-    await this.db.write();
+
+    if (!this.db.data) {
+      this.db.data = { products: [], orders: [] };
+      await this.db.write();
+    }
   }
 
-  data(): LowDbSchema {
+  async data(): Promise<LowDbSchema> {
+    await this.db.read();
+
     if (!this.db.data) {
       throw new Error("DbClient not initialized");
     }
@@ -31,6 +36,7 @@ export class LowDbClient {
   }
 
   async update(fn: (data: LowDbSchema) => void): Promise<void> {
+    await this.db.read();
     await this.db.update(fn);
   }
 }

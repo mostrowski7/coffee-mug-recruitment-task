@@ -8,6 +8,7 @@ import { env } from "@shared/config";
 import { logger } from "@shared/logger";
 
 import { errorHandler } from "./middleware/error-handler.middleware.js";
+import routes from "./routes/index.js";
 
 export function createApp() {
   const app = express();
@@ -33,6 +34,8 @@ export function createApp() {
   );
 
   app.use(pinoHttp({ logger }));
+
+  app.use("/api", routes);
 
   app.use(errorHandler);
 

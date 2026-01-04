@@ -1,12 +1,9 @@
+import type { LowDbSchema } from "./schema.js";
+
 import path from "node:path";
 import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
 import { injectable } from "tsyringe";
-
-export interface LowDbSchema {
-  products: unknown[];
-  orders: unknown[];
-}
 
 const DEFAULT_DATA: LowDbSchema = { products: [], orders: [] };
 

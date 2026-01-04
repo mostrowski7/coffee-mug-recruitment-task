@@ -1,4 +1,4 @@
-import type { CreateProductInput } from "../../interfaces/create-product.schema.js";
+import type { CreateProductInput } from "../../interfaces/schema/create-product.schema.js";
 import type { BaseCommand } from "@shared/types";
 
 import { inject, injectable } from "tsyringe";

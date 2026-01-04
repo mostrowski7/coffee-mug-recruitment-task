@@ -1,3 +1,4 @@
+import type { ProductResponseDto } from "@modules/product";
 import type { Application } from "express";
 
 import request from "supertest";
@@ -78,6 +79,46 @@ describe("Product API endpoints", () => {
       expect(res.body[0]).toHaveProperty("description");
       expect(res.body[0]).toHaveProperty("price");
       expect(res.body[0]).toHaveProperty("stock");
+    });
+  });
+
+  describe("POST /products/:id/restock", () => {
+    it("should restock product", async () => {
+      const initialStock = 5;
+      const restockAmount = 5;
+      const input = ProductFactory.buildCreateProductInput({
+        name: "Restock target",
+        stock: initialStock,
+      });
+
+      await request(app).post("/api/products").send(input).expect(201);
+
+      const createdProductRes = await request(app)
+        .get("/api/products")
+        .expect(200);
+
+      const createdProduct = createdProductRes.body.find(
+        (product: ProductResponseDto) => product.name === input.name,
+      );
+
+      expect(createdProduct).toBeDefined();
+      expect(createdProduct.stock).toBe(initialStock);
+
+      await request(app)
+        .post(`/api/products/${createdProduct.id}/restock`)
+        .send({ amount: restockAmount })
+        .expect(204);
+
+      const restockedProductRes = await request(app)
+        .get("/api/products")
+        .expect(200);
+
+      const updatedProduct = restockedProductRes.body.find(
+        (product: ProductResponseDto) => product.id === createdProduct.id,
+      );
+
+      expect(updatedProduct).toBeDefined();
+      expect(updatedProduct.stock).toBe(initialStock + restockAmount);
     });
   });
 });

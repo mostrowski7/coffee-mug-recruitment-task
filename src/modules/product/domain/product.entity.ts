@@ -1,4 +1,4 @@
-import type { CreateProductInput } from "../interfaces/create-product.schema.js";
+import type { CreateProductInput } from "../interfaces/schema/create-product.schema.js";
 
 import { randomUUID } from "crypto";
 
@@ -10,7 +10,7 @@ export class Product {
     public readonly name: string,
     public readonly description: string,
     public readonly price: number,
-    public readonly stock: number,
+    public stock: number,
   ) {}
 
   public static create(input: CreateProductInput): Product {
@@ -21,5 +21,13 @@ export class Product {
     if (stock < 0) throw new ValidationError("Stock cannot be negative");
 
     return new Product(randomUUID(), name, description, price, stock);
+  }
+
+  public restock(amount: number): void {
+    if (amount <= 0) {
+      throw new ValidationError("Restock amount must be positive");
+    }
+
+    this.stock += amount;
   }
 }

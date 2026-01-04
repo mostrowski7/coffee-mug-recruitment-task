@@ -1,4 +1,5 @@
-import type { CreateProductInput } from "../../interfaces/create-product.schema.js";
+import type { CreateProductInput } from "../../interfaces/schema/create-product.schema.js";
+import type { RestockProductInput } from "../../interfaces/schema/restock-product.schema.js";
 
 import { Product } from "../../domain/product.entity.js";
 
@@ -21,6 +22,16 @@ export class ProductFactory {
       description: "Test description",
       price: 10,
       stock: 5,
+      ...config,
+    };
+  }
+
+  static buildRestockProductInput(
+    config: Partial<RestockProductInput> = {},
+  ): RestockProductInput {
+    return {
+      id: "uuid",
+      amount: 1,
       ...config,
     };
   }

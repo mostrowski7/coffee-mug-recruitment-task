@@ -3,16 +3,15 @@ import type { ParsedQs } from "qs";
 
 import z from "zod";
 
-type EmptyParams = Record<string, never>;
-type EmptyLocals = Record<string, never>;
+type ValidationLocals = Record<string, unknown>;
 
 export function validateBody<T extends z.ZodTypeAny>(schema: T) {
   const middleware: RequestHandler<
-    EmptyParams,
+    Record<string, unknown>,
     unknown,
     z.infer<T>,
     ParsedQs,
-    EmptyLocals
+    ValidationLocals
   > = (req, _res, next) => {
     try {
       req.body = schema.parse(req.body);
@@ -26,11 +25,11 @@ export function validateBody<T extends z.ZodTypeAny>(schema: T) {
 
 export function validateQuery<T extends z.ZodTypeAny>(schema: T) {
   const middleware: RequestHandler<
-    EmptyParams,
+    Record<string, unknown>,
     unknown,
     unknown,
     ParsedQs,
-    { query: z.infer<T> }
+    ValidationLocals
   > = (req, res, next) => {
     try {
       res.locals.query = schema.parse(req.query);
@@ -44,11 +43,11 @@ export function validateQuery<T extends z.ZodTypeAny>(schema: T) {
 
 export function validateParams<T extends z.ZodTypeAny>(schema: T) {
   const middleware: RequestHandler<
-    EmptyParams,
+    Record<string, unknown>,
     unknown,
     unknown,
     ParsedQs,
-    { params: z.infer<T> }
+    ValidationLocals
   > = (req, res, next) => {
     try {
       res.locals.params = schema.parse(req.params);

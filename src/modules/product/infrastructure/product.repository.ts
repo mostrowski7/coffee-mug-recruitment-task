@@ -28,4 +28,10 @@ export class ProductRepository {
 
     return ProductMapper.fromRecordToEntity(product);
   }
+
+  public async findAll(): Promise<Product[]> {
+    const { products } = await this.client.data();
+
+    return ProductMapper.fromRecordsToEntities(products);
+  }
 }

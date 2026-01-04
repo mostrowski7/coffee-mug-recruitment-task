@@ -11,5 +11,7 @@ export function productRoutes() {
 
   router.post("/", validateBody(createProductSchema), controller.createProduct);
 
+  router.get("/", controller.getAllProducts);
+
   return router;
 }

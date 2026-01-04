@@ -5,6 +5,8 @@ import { Low } from "lowdb";
 import { JSONFile } from "lowdb/node";
 import { injectable } from "tsyringe";
 
+import { env } from "@shared/config";
+
 const DEFAULT_DATA: LowDbSchema = { products: [], orders: [] };
 
 @injectable()
@@ -12,7 +14,7 @@ export class LowDbClient {
   private readonly db: Low<LowDbSchema>;
 
   constructor() {
-    const filePath = path.join(process.cwd(), "db.json");
+    const filePath = path.join(process.cwd(), env.dbFileName);
     const adapter = new JSONFile<LowDbSchema>(filePath);
     this.db = new Low<LowDbSchema>(adapter, DEFAULT_DATA);
   }
@@ -24,6 +26,14 @@ export class LowDbClient {
       this.db.data = { products: [], orders: [] };
       await this.db.write();
     }
+  }
+
+  async clear(): Promise<void> {
+    await this.db.read();
+    await this.db.update((data) => {
+      data.products = [];
+      data.orders = [];
+    });
   }
 
   async data(): Promise<LowDbSchema> {

@@ -52,6 +52,10 @@
       "@shared/http": ["shared/http/index.ts"],
 
       "@infra/db": ["infra/db/index.ts"],
+      "@infra/di": ["infra/di/index.ts"],
+      "@infra/http": ["infra/http/index.ts"],
+
+      "@tests/utils": ["tests/utils/index.ts"],
 
       "@modules/product": ["modules/product/index.ts"]
     }

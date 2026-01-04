@@ -14,6 +14,7 @@ const EnvSchema = z.object({
     .refine((origins) => origins.every((o) => o.startsWith("http")), {
       message: "CORS_ORIGINS must be valid URLs",
     }),
+  DB_FILE_NAME: z.string(),
 });
 
 const parsed = EnvSchema.safeParse(process.env);
@@ -29,4 +30,5 @@ export const env = {
   corsOrigin: parsed.data.CORS_ORIGIN,
   rateLimitMax: parsed.data.RATE_LIMIT_MAX,
   rateLimitWindowMs: parsed.data.RATE_LIMIT_WINDOW_MS,
+  dbFileName: parsed.data.DB_FILE_NAME,
 } as const;

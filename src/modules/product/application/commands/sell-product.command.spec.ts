@@ -45,7 +45,7 @@ describe("SellProductCommand", () => {
     });
 
     await expect(command.execute(inputWithNegativeAmount)).rejects.toThrow(
-      new ValidationError("Sell amount must be positive"),
+      new ValidationError("Quantity must be positive"),
     );
 
     expect(repository.update).not.toHaveBeenCalled();

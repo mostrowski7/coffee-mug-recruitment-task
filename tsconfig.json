@@ -57,7 +57,8 @@
 
       "@tests/utils": ["tests/utils/index.ts"],
 
-      "@modules/product": ["modules/product/index.ts"]
+      "@modules/product": ["modules/product/index.ts"],
+      "@modules/order": ["modules/order/index.ts"]
     }
   }
 }

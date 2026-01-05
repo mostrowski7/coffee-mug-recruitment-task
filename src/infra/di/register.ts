@@ -1,6 +1,7 @@
 import { container } from "tsyringe";
 
 import { LowDbClient } from "@infra/db";
+import { CreateOrderCommand, OrderRepository } from "@modules/order";
 import {
   CreateProductCommand,
   GetAllProductsQuery,
@@ -13,12 +14,14 @@ import { logger } from "@shared/logger";
 export function registerDIContainers() {
   container.registerSingleton(LowDbClient);
   container.registerSingleton(ProductRepository);
+  container.registerSingleton(OrderRepository);
 
   container.register(CreateProductCommand, { useClass: CreateProductCommand });
   container.register(RestockProductCommand, {
     useClass: RestockProductCommand,
   });
   container.register(SellProductCommand, { useClass: SellProductCommand });
+  container.register(CreateOrderCommand, { useClass: CreateOrderCommand });
 
   container.register(GetAllProductsQuery, { useClass: GetAllProductsQuery });
 

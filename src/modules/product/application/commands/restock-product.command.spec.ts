@@ -45,7 +45,7 @@ describe("RestockProductCommand", () => {
     });
 
     await expect(command.execute(inputWithNegativeAmount)).rejects.toThrow(
-      new ValidationError("Restock amount must be positive"),
+      new ValidationError("Restock quantity must be positive"),
     );
 
     expect(repository.update).not.toHaveBeenCalled();

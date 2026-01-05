@@ -29,6 +29,22 @@ export class ProductRepository {
     });
   }
 
+  public async updateMany(entities: Product[]): Promise<void> {
+    const records = ProductMapper.fromEntitiesToRecords(entities);
+
+    await this.client.update(({ products }) => {
+      for (const record of records) {
+        const index = products.findIndex((p) => p.id === record.id);
+
+        if (index === -1) {
+          throw new NotFoundError(`Product not found: ${record.id}`);
+        }
+
+        products[index] = record;
+      }
+    });
+  }
+
   public async findOneByName(name: string): Promise<Product | null> {
     const normalizedName = name.trim().toLowerCase();
 
@@ -50,6 +66,23 @@ export class ProductRepository {
     if (!product) return null;
 
     return ProductMapper.fromRecordToEntity(product);
+  }
+
+  public async findByIdsOrThrow(ids: string[]): Promise<Product[]> {
+    const products = await this.findAll();
+    const filteredProducts = products.filter((product) =>
+      ids.includes(product.id),
+    );
+
+    if (ids.length !== filteredProducts.length) {
+      const foundIds = new Set(filteredProducts.map((product) => product.id));
+
+      const missingIds = ids.filter((id) => !foundIds.has(id));
+
+      throw new NotFoundError(`Products not found: ${missingIds.join(", ")}`);
+    }
+
+    return filteredProducts;
   }
 
   public async findAll(): Promise<Product[]> {

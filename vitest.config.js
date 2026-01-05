@@ -25,6 +25,7 @@ export default defineConfig({
         __dirname,
         "src/modules/product/index.ts",
       ),
+      "@modules/order": path.resolve(__dirname, "src/modules/order/index.ts"),
     },
   },
   plugins: [],
@@ -34,5 +35,6 @@ export default defineConfig({
     include: ["src/**/*.spec.ts", "src/**/*.int.spec.ts"],
     setupFiles: ["src/tests/vitest.setup.ts"],
     pool: "threads",
+    fileParallelism: false,
   },
 });

@@ -6,7 +6,18 @@ export interface ProductRecord {
   stock: number;
 }
 
+export interface OrderItemRecord {
+  id: string;
+  quantity: number;
+}
+
+export interface OrderRecord {
+  id: string;
+  customerId: string;
+  items: OrderItemRecord[];
+}
+
 export interface LowDbSchema {
   products: ProductRecord[];
-  orders: unknown[];
+  orders: OrderRecord[];
 }

@@ -34,6 +34,10 @@ export class ProductMapper {
     };
   }
 
+  public static fromEntitiesToRecords(entities: Product[]): ProductRecord[] {
+    return entities.map(this.fromEntityToRecord);
+  }
+
   public static fromRecordsToEntities(records: ProductRecord[]): Product[] {
     return records.map(this.fromRecordToEntity);
   }

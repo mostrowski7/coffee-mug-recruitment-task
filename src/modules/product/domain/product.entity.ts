@@ -25,21 +25,29 @@ export class Product {
 
   public restock(amount: number): void {
     if (amount <= 0) {
-      throw new ValidationError("Restock amount must be positive");
+      throw new ValidationError("Restock quantity must be positive");
     }
 
     this.stock += amount;
   }
 
-  public sell(amount: number): void {
-    if (amount <= 0) {
-      throw new ValidationError("Sell amount must be positive");
+  public sell(quantity: number): void {
+    this.decreaseStock(quantity);
+  }
+
+  public reserve(quantity: number): void {
+    this.decreaseStock(quantity);
+  }
+
+  private decreaseStock(quantity: number): void {
+    if (quantity <= 0) {
+      throw new ValidationError("Quantity must be positive");
     }
 
-    if (amount > this.stock) {
+    if (quantity > this.stock) {
       throw new ValidationError("Insufficient stock");
     }
 
-    this.stock -= amount;
+    this.stock -= quantity;
   }
 }

@@ -4,6 +4,7 @@
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
+    "baseUrl": "./src",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
@@ -11,7 +12,7 @@
     "target": "esnext",
     // For nodejs:
     "lib": ["esnext"],
-    "types": ["node"],
+    "types": ["node", "vitest/globals"],
     // and npm install -D @types/node
 
     // Other Outputs
@@ -38,6 +39,27 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
+    "paths": {
+      "@shared/config": ["shared/config/index.ts"],
+      "@shared/logger": ["shared/logger/index.ts"],
+      "@shared/error": ["shared/error/index.ts"],
+      "@shared/types": ["shared/types/index.ts"],
+      "@shared/http": ["shared/http/index.ts"],
+      "@shared/di": ["shared/di/index.ts"],
+
+      "@infra/db": ["infra/db/index.ts"],
+      "@infra/di": ["infra/di/index.ts"],
+      "@infra/http": ["infra/http/index.ts"],
+
+      "@tests/utils": ["tests/utils/index.ts"],
+
+      "@modules/product": ["modules/product/index.ts"],
+      "@modules/order": ["modules/order/index.ts"]
+    }
   }
 }

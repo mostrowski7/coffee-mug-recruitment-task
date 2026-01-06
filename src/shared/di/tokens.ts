@@ -1,0 +1,1 @@
+export const DISCOUNT_STRATEGY = Symbol("DISCOUNT_STRATEGY");

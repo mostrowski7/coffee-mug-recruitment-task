@@ -4,7 +4,7 @@ import z from "zod";
 
 export const restockProductSchema = z
   .object({
-    amount: z.number().int().positive(),
+    quantity: z.number().int().positive(),
   })
   .strict();
 

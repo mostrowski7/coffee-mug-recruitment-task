@@ -1,4 +1,4 @@
-import type { RestockProductInput } from "../../interfaces/schema/restock-product.schema.js";
+import type { RestockProductInput } from "../../interface/schema/restock-product.schema.js";
 import type { BaseCommand } from "@shared/types";
 
 import { inject, injectable } from "tsyringe";
@@ -18,13 +18,13 @@ export class RestockProductCommand implements BaseCommand<
   ) {}
 
   async execute(input: RestockProductInput): Promise<void> {
-    const { id, amount } = input;
+    const { id, quantity } = input;
 
     const product = await this.productRepository.findOneById(id);
 
     if (!product) throw new NotFoundError("Product not found");
 
-    product.restock(amount);
+    product.restock(quantity);
 
     await this.productRepository.update(product);
   }

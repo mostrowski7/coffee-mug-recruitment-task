@@ -39,12 +39,12 @@ describe("RestockProductCommand", () => {
     expect(repository.update).not.toHaveBeenCalled();
   });
 
-  it("should throw ValidationError if amount to add is negative", async () => {
-    const inputWithNegativeAmount = ProductFactory.buildRestockProductInput({
-      amount: -1,
+  it("should throw ValidationError if quantity to add is negative", async () => {
+    const inputWithNegativeQuantity = ProductFactory.buildRestockProductInput({
+      quantity: -1,
     });
 
-    await expect(command.execute(inputWithNegativeAmount)).rejects.toThrow(
+    await expect(command.execute(inputWithNegativeQuantity)).rejects.toThrow(
       new ValidationError("Restock quantity must be positive"),
     );
 

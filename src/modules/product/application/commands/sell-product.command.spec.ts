@@ -16,7 +16,7 @@ describe("SellProductCommand", () => {
   let repository: MockProxy<ProductRepository>;
 
   const product = ProductFactory.buildProduct({ stock: 5 });
-  const input = ProductFactory.buildSellProductInput({ amount: 2 });
+  const input = ProductFactory.buildSellProductInput({ quantity: 2 });
 
   beforeEach(() => {
     testContainer = container.createChildContainer();
@@ -39,21 +39,21 @@ describe("SellProductCommand", () => {
     expect(repository.update).not.toHaveBeenCalled();
   });
 
-  it("should throw ValidationError if amount to sell is negative", async () => {
-    const inputWithNegativeAmount = ProductFactory.buildSellProductInput({
-      amount: -1,
+  it("should throw ValidationError if quantity to sell is negative", async () => {
+    const inputWithNegativeQuantity = ProductFactory.buildSellProductInput({
+      quantity: -1,
     });
 
-    await expect(command.execute(inputWithNegativeAmount)).rejects.toThrow(
+    await expect(command.execute(inputWithNegativeQuantity)).rejects.toThrow(
       new ValidationError("Quantity must be positive"),
     );
 
     expect(repository.update).not.toHaveBeenCalled();
   });
 
-  it("should throw ValidationError if amount exceeds stock", async () => {
+  it("should throw ValidationError if quantity exceeds stock", async () => {
     const inputExceedingStock = ProductFactory.buildSellProductInput({
-      amount: 999,
+      quantity: 999,
     });
 
     await expect(command.execute(inputExceedingStock)).rejects.toThrow(

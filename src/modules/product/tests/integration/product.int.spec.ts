@@ -94,7 +94,7 @@ describe("Product API endpoints", () => {
   describe("POST /products/:id/restock", () => {
     it("should restock product", async () => {
       const initialStock = 5;
-      const restockAmount = 5;
+      const restockQuantity = 5;
       const input = ProductFactory.buildCreateProductInput({
         name: "Restock target",
         stock: initialStock,
@@ -115,7 +115,7 @@ describe("Product API endpoints", () => {
 
       await request(app)
         .post(`/api/products/${createdProduct.id}/restock`)
-        .send({ amount: restockAmount })
+        .send({ quantity: restockQuantity })
         .expect(204);
 
       const restockedProductRes = await request(app)
@@ -127,14 +127,14 @@ describe("Product API endpoints", () => {
       );
 
       expect(updatedProduct).toBeDefined();
-      expect(updatedProduct.stock).toBe(initialStock + restockAmount);
+      expect(updatedProduct.stock).toBe(initialStock + restockQuantity);
     });
   });
 
   describe("POST /products/:id/sell", () => {
     it("should sell product", async () => {
       const initialStock = 5;
-      const sellAmount = 2;
+      const sellQuantity = 2;
       const input = ProductFactory.buildCreateProductInput({
         name: "Sell target",
         stock: initialStock,
@@ -155,7 +155,7 @@ describe("Product API endpoints", () => {
 
       await request(app)
         .post(`/api/products/${createdProduct.id}/sell`)
-        .send({ amount: sellAmount })
+        .send({ quantity: sellQuantity })
         .expect(204);
 
       const updatedRes = await request(app).get("/api/products").expect(200);
@@ -165,12 +165,12 @@ describe("Product API endpoints", () => {
       );
 
       expect(updatedProduct).toBeDefined();
-      expect(updatedProduct.stock).toBe(initialStock - sellAmount);
+      expect(updatedProduct.stock).toBe(initialStock - sellQuantity);
     });
 
     it("should return validation error when selling more than stock", async () => {
       const initialStock = 1;
-      const sellAmount = 2;
+      const sellQuantity = 2;
       const input = ProductFactory.buildCreateProductInput({
         name: "Sell too much",
         stock: initialStock,
@@ -188,7 +188,7 @@ describe("Product API endpoints", () => {
 
       await request(app)
         .post(`/api/products/${createdProduct.id}/sell`)
-        .send({ amount: sellAmount })
+        .send({ quantity: sellQuantity })
         .expect(400)
         .expect((res) => {
           expect(res.body.message).toBe("Insufficient stock");

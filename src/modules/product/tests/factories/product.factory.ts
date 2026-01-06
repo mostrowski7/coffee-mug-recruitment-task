@@ -1,6 +1,6 @@
-import type { CreateProductInput } from "../../interfaces/schema/create-product.schema.js";
-import type { RestockProductInput } from "../../interfaces/schema/restock-product.schema.js";
-import type { SellProductInput } from "../../interfaces/schema/sell-product.schema.js";
+import type { CreateProductInput } from "../../interface/schema/create-product.schema.js";
+import type { RestockProductInput } from "../../interface/schema/restock-product.schema.js";
+import type { SellProductInput } from "../../interface/schema/sell-product.schema.js";
 
 import { Product } from "../../domain/product.entity.js";
 
@@ -32,7 +32,7 @@ export class ProductFactory {
   ): RestockProductInput {
     return {
       id: "uuid",
-      amount: 1,
+      quantity: 1,
       ...config,
     };
   }
@@ -42,7 +42,7 @@ export class ProductFactory {
   ): SellProductInput {
     return {
       id: "uuid",
-      amount: 1,
+      quantity: 1,
       ...config,
     };
   }

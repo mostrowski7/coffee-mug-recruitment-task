@@ -36,7 +36,7 @@ export function productController() {
 
       await command.execute({
         id: params.id,
-        amount: body.amount,
+        quantity: body.quantity,
       });
 
       res.sendStatus(204);
@@ -50,7 +50,7 @@ export function productController() {
 
       await command.execute({
         id: params.id,
-        amount: body.amount,
+        quantity: body.quantity,
       });
 
       res.sendStatus(204);

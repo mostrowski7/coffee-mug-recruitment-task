@@ -1,4 +1,4 @@
-import type { SellProductInput } from "../../interfaces/schema/sell-product.schema.js";
+import type { SellProductInput } from "../../interface/schema/sell-product.schema.js";
 import type { BaseCommand } from "@shared/types";
 
 import { inject, injectable } from "tsyringe";
@@ -15,13 +15,13 @@ export class SellProductCommand implements BaseCommand<SellProductInput, void> {
   ) {}
 
   async execute(input: SellProductInput): Promise<void> {
-    const { id, amount } = input;
+    const { id, quantity } = input;
 
     const product = await this.productRepository.findOneById(id);
 
     if (!product) throw new NotFoundError("Product not found");
 
-    product.sell(amount);
+    product.sell(quantity);
 
     await this.productRepository.update(product);
   }

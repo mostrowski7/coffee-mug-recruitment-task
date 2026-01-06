@@ -3,6 +3,7 @@ import z from "zod";
 export const createOrderSchema = z
   .object({
     customerId: z.uuid(),
+    customerLocation: z.enum(["US", "EU", "ASIA"]),
     items: z
       .array(
         z.object({

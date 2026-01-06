@@ -50,6 +50,7 @@
       "@shared/error": ["shared/error/index.ts"],
       "@shared/types": ["shared/types/index.ts"],
       "@shared/http": ["shared/http/index.ts"],
+      "@shared/di": ["shared/di/index.ts"],
 
       "@infra/db": ["infra/db/index.ts"],
       "@infra/di": ["infra/di/index.ts"],

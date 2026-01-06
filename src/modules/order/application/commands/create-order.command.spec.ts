@@ -4,10 +4,21 @@ import type { MockProxy } from "vitest-mock-extended";
 import { container } from "tsyringe";
 import { mock } from "vitest-mock-extended";
 
-import { Product, ProductRepository } from "@modules/product";
+import {
+  Product,
+  ProductRepository,
+  ProductStockService,
+} from "@modules/product";
 import { ProductFactory } from "@modules/product";
+import { DISCOUNT_STRATEGY } from "@shared/di";
 import { NotFoundError, ValidationError } from "@shared/error";
 
+import { DiscountCalculatorService } from "../../domain/services/discount-calculator.service.js";
+import { LocationPricingService } from "../../domain/services/location-pricing.service.js";
+import { OrderPricingService } from "../../domain/services/order-pricing.service.js";
+import { SeasonalDiscountStrategy } from "../../domain/strategies/seasonal-discount.strategy.js";
+import { VolumeDiscountStrategy } from "../../domain/strategies/volume-discount.strategy.js";
+import { getBlackFridayDate } from "../../domain/utils/discount-date.util.js";
 import { OrderRepository } from "../../infrastructure/order.repository.js";
 import { OrderFactory } from "../../tests/factories/order.factory.js";
 import { CreateOrderCommand } from "./create-order.command.js";
@@ -29,6 +40,27 @@ describe("CreateOrderCommand", () => {
     testContainer.registerInstance(OrderRepository, orderRepository);
     testContainer.registerInstance(ProductRepository, productRepository);
 
+    testContainer.register(DISCOUNT_STRATEGY, {
+      useClass: VolumeDiscountStrategy,
+    });
+
+    testContainer.register(DISCOUNT_STRATEGY, {
+      useClass: SeasonalDiscountStrategy,
+    });
+
+    testContainer.register(ProductStockService, {
+      useClass: ProductStockService,
+    });
+    testContainer.register(OrderPricingService, {
+      useClass: OrderPricingService,
+    });
+    testContainer.register(LocationPricingService, {
+      useClass: LocationPricingService,
+    });
+    testContainer.register(DiscountCalculatorService, {
+      useClass: DiscountCalculatorService,
+    });
+
     command = testContainer.resolve(CreateOrderCommand);
 
     product1 = ProductFactory.buildProduct({
@@ -43,6 +75,13 @@ describe("CreateOrderCommand", () => {
     productRepository.findByIdsOrThrow.mockResolvedValue([product1]);
     productRepository.updateMany.mockResolvedValue(undefined);
     orderRepository.save.mockResolvedValue(undefined);
+
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 0, 10));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("Success Cases", () => {
@@ -94,15 +133,16 @@ describe("CreateOrderCommand", () => {
     });
 
     it("should reduce stock correctly", async () => {
+      const orderQuantity = 3;
       const input = OrderFactory.buildCreateOrderInput({
-        items: [{ id: product1.id, quantity: 3 }],
+        items: [{ id: product1.id, quantity: orderQuantity }],
       });
 
       const initialStock = product1.stock;
 
       await command.execute(input);
 
-      expect(product1.stock).toBe(initialStock - 3);
+      expect(product1.stock).toBe(initialStock - orderQuantity);
     });
   });
 
@@ -301,6 +341,424 @@ describe("CreateOrderCommand", () => {
       expect(productWithLargeStock.stock).toBe(1);
       expect(productRepository.updateMany).toHaveBeenCalled();
       expect(orderRepository.save).toHaveBeenCalled();
+    });
+  });
+
+  describe("Discount Calculation", () => {
+    describe("Volume Discounts", () => {
+      it("should apply 10% discount for 5-9 units", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 5 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 450,
+          }),
+        );
+      });
+
+      it("should apply 20% discount for 10-49 units", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 10 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 800,
+          }),
+        );
+      });
+
+      it("should apply 30% discount for 50+ units", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 50 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 3500,
+          }),
+        );
+      });
+
+      it("should not apply volume discount for less than 5 units", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 4 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 400,
+          }),
+        );
+      });
+    });
+
+    describe("Seasonal Discounts", () => {
+      it("should apply 25% Black Friday discount", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const blackFriday = getBlackFridayDate(2026);
+        vi.setSystemTime(blackFriday);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 150,
+          }),
+        );
+      });
+
+      it("should apply 15% holiday discount on Polish bank holiday", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        vi.setSystemTime(new Date(2026, 0, 6));
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 170,
+          }),
+        );
+      });
+
+      it("should apply Black Friday discount over holiday discount when both apply", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const blackFriday = getBlackFridayDate(2026);
+        vi.setSystemTime(blackFriday);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 150,
+          }),
+        );
+      });
+
+      it("should combine seasonal discount with location pricing", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const blackFriday = getBlackFridayDate(2026);
+        vi.setSystemTime(blackFriday);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "EU",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 172.5,
+          }),
+        );
+      });
+    });
+
+    describe("Location Pricing", () => {
+      it("should apply standard pricing for US customers", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 200,
+          }),
+        );
+      });
+
+      it("should apply 15% price increase for EU customers (VAT)", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "EU",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 230,
+          }),
+        );
+      });
+
+      it("should apply 5% discount for ASIA customers", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "ASIA",
+          items: [{ id: product1.id, quantity: 2 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 190,
+          }),
+        );
+      });
+    });
+
+    describe("Discount Priority - Highest Wins", () => {
+      it("should apply volume discount over location pricing when volume is better", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "ASIA",
+          items: [{ id: product1.id, quantity: 10 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 760,
+          }),
+        );
+      });
+
+      it("should apply volume discount over EU price increase", async () => {
+        const productWithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          productWithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "EU",
+          items: [{ id: product1.id, quantity: 50 }],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 4025,
+          }),
+        );
+      });
+    });
+
+    describe("Multiple Products", () => {
+      it("should calculate total correctly for multiple products with different discounts", async () => {
+        const product1WithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        const product2WithPrice = ProductFactory.buildProduct({
+          id: product2.id,
+          price: 50,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          product1WithPrice,
+          product2WithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "US",
+          items: [
+            { id: product1.id, quantity: 10 },
+            { id: product2.id, quantity: 2 },
+          ],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 900,
+          }),
+        );
+      });
+
+      it("should apply different discounts per item based on quantity", async () => {
+        const product1WithPrice = ProductFactory.buildProduct({
+          id: product1.id,
+          price: 100,
+          stock: 100,
+        });
+
+        const product2WithPrice = ProductFactory.buildProduct({
+          id: product2.id,
+          price: 200,
+          stock: 100,
+        });
+
+        productRepository.findByIdsOrThrow.mockResolvedValue([
+          product1WithPrice,
+          product2WithPrice,
+        ]);
+
+        const input = OrderFactory.buildCreateOrderInput({
+          customerLocation: "ASIA",
+          items: [
+            { id: product1.id, quantity: 4 },
+            { id: product2.id, quantity: 5 },
+          ],
+        });
+
+        await command.execute(input);
+
+        expect(orderRepository.save).toHaveBeenCalledWith(
+          expect.objectContaining({
+            total: 1235,
+          }),
+        );
+      });
     });
   });
 });

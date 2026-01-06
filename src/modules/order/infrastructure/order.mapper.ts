@@ -7,6 +7,7 @@ export class OrderMapper {
       id: entity.id,
       customerId: entity.customerId,
       items: entity.items,
+      total: entity.total,
     };
   }
 }

@@ -9,6 +9,7 @@ export class OrderFactory {
       config.id ?? "uuid",
       config.customerId ?? "uuid",
       config.items ?? [new OrderItem("Product1", 2)],
+      config.total ?? 200,
     );
   }
 
@@ -21,6 +22,7 @@ export class OrderFactory {
   ): CreateOrderInput {
     return {
       customerId: "uuid",
+      customerLocation: "US",
       items: [
         {
           id: "uuid",

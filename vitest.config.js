@@ -14,6 +14,7 @@ export default defineConfig({
       "@shared/error": path.resolve(__dirname, "src/shared/error/index.ts"),
       "@shared/types": path.resolve(__dirname, "src/shared/types/index.ts"),
       "@shared/http": path.resolve(__dirname, "src/shared/http/index.ts"),
+      "@shared/di": path.resolve(__dirname, "src/shared/di/index.ts"),
 
       "@infra/db": path.resolve(__dirname, "src/infra/db/index.ts"),
       "@infra/di": path.resolve(__dirname, "src/infra/di/index.ts"),

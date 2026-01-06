@@ -15,6 +15,7 @@ export interface OrderRecord {
   id: string;
   customerId: string;
   items: OrderItemRecord[];
+  total: number;
 }
 
 export interface LowDbSchema {

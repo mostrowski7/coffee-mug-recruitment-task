@@ -37,6 +37,13 @@ export function createApp() {
 
   app.use("/api", routes);
 
+  app.use((req, res) => {
+    res.status(404).json({
+      message: "Resource not found",
+      path: req.path,
+    });
+  });
+
   app.use(errorHandler);
 
   return app;
